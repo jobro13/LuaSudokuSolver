@@ -46,6 +46,11 @@ function sh.solve(sudoku)
 end
 
 
+function sh.print(sudoku)
+	sudoku:print()
+end
+
+
 function commands.execute(sudoku, cmdline)
 	local arg,rest = cmdline:match(("(%w+)(.*)"))
 	if commands.available[arg] then

@@ -5,7 +5,7 @@ sudoku:putspecial("reset")
 
 local my = sudoku:new()
 
-my:load("msk_009", 1)
+my:load("easy.txt", 4)
 
 my:makepmap()
 
