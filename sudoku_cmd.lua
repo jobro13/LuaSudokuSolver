@@ -7,14 +7,24 @@ commands.available = {}
 
 local sh = commands.available -- shortcut, becuase lazy
 
-function sh.pos(sudoku, x,y)
+function sh.pos(sudoku, y,x)
 	if tonumber(x) and tonumber(y) then 
-		print((sudoku:getnum(x,y)))
+		print((sudoku:getnum(y,x)))
 	end 
 end
 
 sh.exit = function() print('bai') os.exit() end
 sh.help = function() print("available commands") for i,v in pairs(sh) do print(i) end end
+sh.possible = function(sudoku, y,x)
+	local d = sudoku:processpossible(y,x)
+	print("possible numbers in box " .. y .. "x" .. x .. ": ")
+	for i,v in pairs(d) do
+		if v then 
+			print(i)
+		end 
+	end 
+end
+
 
 function commands.execute(sudoku, cmdline)
 	local arg,rest = cmdline:match(("(%w+)(.*)"))

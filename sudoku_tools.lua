@@ -45,9 +45,9 @@ function sudoku:load(fname,sudokunum)
 			local column = i - (row*9) + 9
 			local char = line:sub(i,i)
 			if tonumber(char) then 
-				self.data[row][column] = {tonumber(char), "nonempty"}
+				self.data[row][column] = {tonumber(char), "nonempty", {}}
 			else
-				self.data[row][column] = {nil, "empty"}
+				self.data[row][column] = {nil, "empty", {}}
 			end
 		end
 	else
@@ -107,6 +107,62 @@ function sudoku:print(home)
 		io.write("|\n")
 	end
 	border()
+end
+
+-- process all possible numbers, putting then in the 3rd index of the data table
+function sudoku:processpossible(y,x)
+	local y,x = tonumber(y), tonumber(x)
+	local use = self.data[y][x][3]
+	local box = self:getnumbersinbox(y,x)
+	local row = self:getnumbersinrow(y)
+	local column = self:getnumbersinrow(x)
+	for i = 1, 9 do 
+		use[i] = not(box[i] or row[i] or column[i])
+	end 
+	return use 
+end
+
+-- list returned by following 4 funcitons:
+-- [num] = true/false (meaning "is in box", "is in row", etc (conjugate NOTs them))
+
+-- get all numbers inside a box
+function sudoku:getnumbersinbox(y,x)
+	local list = {}
+	local xstart = math.ceil(x/3)
+	local ystart = math.ceil(y/3)
+	for y=ystart,ystart+2 do
+		for x=xstart,xstart+2 do
+			local num = self:getnum(y,x)
+			if num then 
+				list[num] = true 
+			end
+		end
+	end
+	return list
+end
+
+-- all numbers inside row
+function sudoku:getnumbersinrow(y)
+	local list = {}
+	for x = 1, 9 do 
+		local num = self:getnum(y,x)
+		if num then 
+			list[num] = true 
+		end
+	end
+	return list 
+end 
+
+-- all numbers inside column
+function sudoku:getnumbersincolumn(x)
+	local list = {}
+	for y = 1, 9 do 
+		local num = self:getnum(y,x)
+		if num then 
+			list[num] = true 
+		end
+	end
+	return list
 end
 
 return sudoku
