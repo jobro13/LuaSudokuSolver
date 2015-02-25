@@ -57,6 +57,7 @@ end
 
 -- row, column -> following matrix notation
 function sudoku:getnum(y,x)
+
 	local data = self.data[tonumber(y)][tonumber(x)]
 	return data[1], data[2]
 end 
@@ -113,11 +114,17 @@ end
 function sudoku:processpossible(y,x)
 	local y,x = tonumber(y), tonumber(x)
 	local use = self.data[y][x][3]
-	local box = self:getnumbersinbox(y,x)
-	local row = self:getnumbersinrow(y)
-	local column = self:getnumbersinrow(x)
-	for i = 1, 9 do 
-		use[i] = not(box[i] or row[i] or column[i])
+	if {self:getnum(y,x)}[2] ~= "empty" then 
+		for i = 1, 9 do 
+			use[i] = false 
+		end 
+	else 
+		local box = self:getnumbersinbox(y,x)
+		local row = self:getnumbersinrow(y)
+		local column = self:getnumbersincolumn(x)
+		for i = 1, 9 do 
+			use[i] = not(box[i] or row[i] or column[i])
+		end
 	end 
 	return use 
 end
@@ -128,11 +135,12 @@ end
 -- get all numbers inside a box
 function sudoku:getnumbersinbox(y,x)
 	local list = {}
-	local xstart = math.ceil(x/3)
-	local ystart = math.ceil(y/3)
+	local xstart = math.floor((x-1)/3)*3+1
+	local ystart = math.floor((y-1)/3)*3+1
 	for y=ystart,ystart+2 do
 		for x=xstart,xstart+2 do
 			local num = self:getnum(y,x)
+		
 			if num then 
 				list[num] = true 
 			end
@@ -146,6 +154,7 @@ function sudoku:getnumbersinrow(y)
 	local list = {}
 	for x = 1, 9 do 
 		local num = self:getnum(y,x)
+	
 		if num then 
 			list[num] = true 
 		end
@@ -158,6 +167,7 @@ function sudoku:getnumbersincolumn(x)
 	local list = {}
 	for y = 1, 9 do 
 		local num = self:getnum(y,x)
+	
 		if num then 
 			list[num] = true 
 		end
