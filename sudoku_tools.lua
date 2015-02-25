@@ -184,8 +184,32 @@ function sudoku:getnumbersincolumn(x)
 	return list
 end
 
+-- following 3 functions return if coord is in column, box or row;
+
+function sudoku:coordincolumn(y,x, column)
+	return x == column 
+end 
+
+function sudoku:coordinrow(y,x,row)
+	return y==row 
+end 
+
+function sudoku:coordinbox(y,x,boxy, boxx)
+	local xstart = math.floor((x-1)/3)*3+1
+	local ystart = math.floor((y-1)/3)*3+1
+	for yp=ystart,ystart+2 do
+		for xp=xstart,xstart+2 do
+			if yp == y and xp == x then 
+				return true 
+			end 
+		end 
+	end 
+	return false  
+end 
+
 function sudoku:sortpmap()
 	local out = {}
+	local total_mustfill = 0
 	for y = 1, 9 do 
 		for x = 1,9 do 
 			local data = self.data[y][x][3]
@@ -193,6 +217,7 @@ function sudoku:sortpmap()
 			for i,v in pairs(data) do 
 				if v then 
 					got = true 
+					total_mustfill = total_mustfill+1
 					break 
 				end 
 			end 
@@ -216,23 +241,111 @@ function sudoku:sortpmap()
 		end
 		return numa < numb
 	end)
-	return out
+	return out, total_mustfill
 end
 
 -- returns an independent sudoku data strucutre,
 -- manipulating known values, to put num inside y and x.
 -- returns: sudoku, possible (possible is a test to make sure numbers are still available!)
+-- and : affected, all coordinates with affected numbers.
 function sudoku:gettransformed(y,x,num)
-
+	local use = self:new()
+	local validmove = true
+	for posy = 1, 9 do 
+		for posx = 1,9 do 
+			local gntable = use.data[posy][posx]
+			if not gntable then 
+				use.data[posy][posx] = {}
+				gntable = use.data[posy][posx]
+			end
+			local origdata = self.data[posy][posx]
+			if origdata[2] == "nonempty" or origdata[2] == "try" then 
+				-- already number in here, copy;
+				gntable[1] = origdata[1]
+				gntable[2] = origdata[2]
+				gntable[3] = {} -- no possible numbers, as already existiing
+			else 
+				-- oh noes, it is empty
+				if posy == y and posx == x then 
+					-- our own!?
+					gntable[1] = num
+					gntable[2] = "try" -- try to put da stuff in here.
+					gntable[3] = {}
+				else 
+					gntable[3] = {}
+					gntable[1] = origdata[1]
+					gntable[2] = origdata[2]
+					local shwatch = true -- should watch?
+					for tnum, possible in pairs(origdata[3]) do 
+						gntable[3][tnum] = possible 
+						if possible and tnum ~= num then 
+							shwatch = false  -- no reason to watch if there is another placeholder, only watch when num is last possible number here, when that is gone: invalid move 
+						end 
+					end 
+					if self:coordinbox(posy,posx,y,x) then 
+						-- affected+1?
+						gntable[3][num] = false 
+						if shwatch then 
+							validmove = false 
+						end
+					elseif self:coordincolumn(posy, posx, y) then 
+						gntable[3][num] = false 
+						if shwatch then 
+							validmove = false 
+						end
+					elseif self:coordinrow(posy, posx, x) then 
+						gntable[3][num] = false 
+						if shwatch then 
+							validmove = false 
+						end
+					end
+				end 
+			end
+		end 
+	end
+	return use, validmove
 end 
 
-function sudoku:solve(fwrite, graphics)
-	local sorted = self:sortpmap()
-	local less = sorted[1]
-	local y,x, possible = unpack(less)
-	-- for every possible number ...
-	for _, trynum in pairs(possible) do 
+function sudoku:printpmap()
+	for y=1,9 do 
+		for x=1,9 do 
+			local use = self.data[y][x][3]
+			io.write(y.."x"..x..": ")
+			for i,v in pairs(use) do 
+				if v then 
+					io.write(i..", ")
+				end 
+			end 
+			io.write("\n")
+		end 
+	end
+end
 
+function sudoku:solve(fwrite, graphics)
+	local sorted, mf = self:sortpmap()
+	print(mf)
+	if mf == 0 then
+		print("SOLVED!? WTF!")
+		--self:print(true)
+		return
+	end
+
+	-- for every possible number ...
+	for i, data in pairs(sorted) do 
+		local y,x, possible_numbers = unpack(data)
+		for trynum,cando in pairs(possible_numbers) do 
+			if cando then 
+				print(y,x,trynum)
+				local news, validmove = self:gettransformed(y,x,trynum);		
+
+				if graphics then 
+					news:print(true)
+				end
+				if validmove then 
+					news:solve(fwrite, graphics)
+				end
+			end
+		end
 	end 
 end
 

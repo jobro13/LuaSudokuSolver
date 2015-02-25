@@ -11,6 +11,8 @@ my:makepmap()
 
 my:print(true)
 
+my:solve(nil,true)
+
 while true do
 	cmd(my, io.read())
 end
