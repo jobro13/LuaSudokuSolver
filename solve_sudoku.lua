@@ -1,5 +1,14 @@
-local sudoku = require("sudoku_tools")
+local sudoku = require "sudoku_tools"
+local cmd = require "sudoku_cmd"
 
-sudoku:load("msk_009", 1)
+sudoku:putspecial("reset")
 
-print(sudoku)
+local my = sudoku:new()
+
+my:load("msk_009", 1)
+
+my:print(true)
+
+while true do
+	cmd(my, io.read())
+end
