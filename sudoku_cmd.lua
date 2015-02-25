@@ -25,6 +25,26 @@ sh.possible = function(sudoku, y,x)
 	end 
 end
 
+sh.pmap = function(sudoku)
+	sudoku:makepmap()
+	for y=1,9 do 
+		for x=1,9 do 
+			local use = sudoku.data[y][x][3]
+			io.write(y.."x"..x..": ")
+			for i,v in pairs(use) do 
+				if v then 
+					io.write(i..", ")
+				end 
+			end 
+			io.write("\n")
+		end 
+	end
+end
+
+function sh.solve(sudoku)
+	sudoku:solve()
+end
+
 
 function commands.execute(sudoku, cmdline)
 	local arg,rest = cmdline:match(("(%w+)(.*)"))

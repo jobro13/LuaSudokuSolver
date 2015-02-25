@@ -7,6 +7,8 @@ local my = sudoku:new()
 
 my:load("msk_009", 1)
 
+my:makepmap()
+
 my:print(true)
 
 while true do

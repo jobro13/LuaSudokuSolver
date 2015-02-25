@@ -110,11 +110,20 @@ function sudoku:print(home)
 	border()
 end
 
+function sudoku:makepmap()
+	for y=1,9 do
+		for x=1,9 do 
+			self:processpossible(y,x)
+		end 
+	end
+end
+
 -- process all possible numbers, putting then in the 3rd index of the data table
 function sudoku:processpossible(y,x)
 	local y,x = tonumber(y), tonumber(x)
 	local use = self.data[y][x][3]
-	if {self:getnum(y,x)}[2] ~= "empty" then 
+	local stat = self.data[y][x][2]
+	if stat ~= "empty" then 
 		for i = 1, 9 do 
 			use[i] = false 
 		end 
@@ -173,6 +182,58 @@ function sudoku:getnumbersincolumn(x)
 		end
 	end
 	return list
+end
+
+function sudoku:sortpmap()
+	local out = {}
+	for y = 1, 9 do 
+		for x = 1,9 do 
+			local data = self.data[y][x][3]
+			local got = false 
+			for i,v in pairs(data) do 
+				if v then 
+					got = true 
+					break 
+				end 
+			end 
+			if got then 
+				table.insert(out, {y,x,data})
+			end
+		end 
+	end
+	table.sort(out, function(a,b)
+		local numa = 0
+		local numb = 0
+		for i,v in pairs(a[3]) do 
+			if v then
+				numa = numa + 1
+			end 
+		end 
+		for i,v in pairs(b[3]) do 
+			if v then
+				numb = numb + 1
+			end 
+		end
+		return numa < numb
+	end)
+	return out
+end
+
+-- returns an independent sudoku data strucutre,
+-- manipulating known values, to put num inside y and x.
+-- returns: sudoku, possible (possible is a test to make sure numbers are still available!)
+function sudoku:gettransformed(y,x,num)
+
+end 
+
+function sudoku:solve(fwrite, graphics)
+	local sorted = self:sortpmap()
+	local less = sorted[1]
+	local y,x, possible = unpack(less)
+	-- for every possible number ...
+	for _, trynum in pairs(possible) do 
+
+	end 
 end
 
 return sudoku
