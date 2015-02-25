@@ -325,8 +325,10 @@ function sudoku:solve(fwrite, graphics)
 	local sorted, mf = self:sortpmap()
 	print(mf)
 	if mf == 0 then
-		print("SOLVED!? WTF!")
-		--self:print(true)
+		self:print(true)
+		print("SOLVED!")
+		print("Press any key to continue finding another solution...")
+		io.read()
 		return
 	end
 
